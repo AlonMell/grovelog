@@ -9,7 +9,7 @@ import (
 
 	"log/slog"
 
-	"github.com/AlonMell/grovelog" // Replace with your actual import path
+	"github.com/AlonMell/grovelog"
 )
 
 func main() {
@@ -215,7 +215,7 @@ func demonstrateConcurrentUsage() {
 }
 
 // simulated HTTP request handler
-func handleRequest(logger *slog.Logger, requestID string, method string, path string) {
+func handleRequest(logger *slog.Logger, requestID, method, path string) {
 	// Create a request-scoped logger
 	reqLogger := logger.With(
 		"request_id", requestID,

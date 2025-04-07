@@ -19,20 +19,25 @@ import (
 type Format int
 
 const (
+	// JSON format outputs logs in JSON format
 	JSON Format = iota
+	// Plain format outputs logs in plain text format
 	Plain
+	// Color format outputs logs with color highlighting
 	Color
 )
 
 // DefaultTimeFormat is the default time format
 const DefaultTimeFormat = "[15:05:05.000]"
 
+// Options holds configuration options for the logger
 type Options struct {
 	SlogOpts   *slog.HandlerOptions
 	TimeFormat string
 	Format     Format
 }
 
+// Handler implements the slog.Handler interface with custom formatting
 type Handler struct {
 	opts Options
 	l    *stdLog.Logger
@@ -44,6 +49,7 @@ type Handler struct {
 	mu         sync.RWMutex
 }
 
+// Message represents a formatted log message
 type Message struct {
 	Time  string
 	Level string
@@ -51,6 +57,7 @@ type Message struct {
 	Atrs  string
 }
 
+// NewOptions creates Options with the specified level, time format, and output format
 func NewOptions(level slog.Level, timeFormat string, format Format) Options {
 	if timeFormat == "" {
 		timeFormat = DefaultTimeFormat
@@ -105,7 +112,7 @@ func NewHandler(out io.Writer, opts Options) slog.Handler {
 }
 
 // Handle processes a log record
-func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
+func (h *Handler) Handle(ctx context.Context, r slog.Record) error { //nolint:gocritic
 	timeStr := h.formatTime(r.Time)
 
 	logMsg := r.Message
@@ -159,7 +166,12 @@ func (w *jsonWriter) Write(p []byte) (n int, err error) {
 // marshalFields optimizes JSON serialization of fields
 func (h *Handler) marshalFields(fields map[string]any) ([]byte, error) {
 	if h.bufferPool != nil {
-		bufPtr := h.bufferPool.Get().(*[]byte)
+		bufPtr, ok := h.bufferPool.Get().(*[]byte)
+		if !ok || bufPtr == nil {
+			// Fallback if type assertion fails
+			return json.MarshalIndent(fields, "", "  ")
+		}
+
 		*bufPtr = (*bufPtr)[:0] // Clear buffer
 
 		encoder := json.NewEncoder(io.MultiWriter(io.Discard, &jsonWriter{buf: bufPtr}))
@@ -198,7 +210,7 @@ func (h *Handler) formatTime(t time.Time) string {
 	return t.Format(format)
 }
 
-func (h *Handler) collectFields(r slog.Record) map[string]any {
+func (h *Handler) collectFields(r slog.Record) map[string]any { //nolint:gocritic
 	fields := make(map[string]any, r.NumAttrs()+len(h.attrs))
 
 	h.mu.RLock()
