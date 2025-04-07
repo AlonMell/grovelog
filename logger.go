@@ -12,6 +12,7 @@ import (
 
 	"slices"
 
+	"github.com/AlonMell/grovelog/util"
 	"github.com/fatih/color"
 )
 
@@ -113,6 +114,13 @@ func NewHandler(out io.Writer, opts Options) slog.Handler {
 
 // Handle processes a log record
 func (h *Handler) Handle(ctx context.Context, r slog.Record) error { //nolint:gocritic
+	ctxAttrs := util.ExtractLogAttrs(ctx)
+	if len(ctxAttrs) > 0 {
+		for _, attr := range ctxAttrs {
+			r.AddAttrs(attr)
+		}
+	}
+
 	timeStr := h.formatTime(r.Time)
 
 	logMsg := r.Message
@@ -168,7 +176,6 @@ func (h *Handler) marshalFields(fields map[string]any) ([]byte, error) {
 	if h.bufferPool != nil {
 		bufPtr, ok := h.bufferPool.Get().(*[]byte)
 		if !ok || bufPtr == nil {
-			// Fallback if type assertion fails
 			return json.MarshalIndent(fields, "", "  ")
 		}
 
@@ -266,14 +273,10 @@ func (h *Handler) Enabled(ctx context.Context, level slog.Level) bool {
 
 // WithAttrs returns a new Handler with the given attributes added
 func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	if len(attrs) == 0 {
-		return h
-	}
-
 	validAttrs := make([]slog.Attr, 0, len(attrs))
-	for _, a := range attrs {
-		if a.Key != "" {
-			validAttrs = append(validAttrs, a)
+	for _, attr := range attrs {
+		if attr.Key != "" {
+			validAttrs = append(validAttrs, attr)
 		}
 	}
 
@@ -282,20 +285,15 @@ func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	}
 
 	h.mu.RLock()
-	newHandler := &Handler{
+	defer h.mu.RUnlock()
+
+	return &Handler{
 		l:          h.l,
 		opts:       h.opts,
 		groups:     slices.Clone(h.groups),
 		bufferPool: h.bufferPool,
+		attrs:      slices.Concat(slices.Clone(h.attrs), validAttrs),
 	}
-
-	newAttrs := make([]slog.Attr, len(h.attrs)+len(validAttrs))
-	copy(newAttrs, h.attrs)
-	copy(newAttrs[len(h.attrs):], validAttrs)
-	h.mu.RUnlock()
-
-	newHandler.attrs = newAttrs
-	return newHandler
 }
 
 // WithGroup returns a new Handler with the given group name added

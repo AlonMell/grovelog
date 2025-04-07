@@ -316,8 +316,7 @@ func BenchmarkHandleWithAttrs(b *testing.B) {
 	opts := grovelog.NewOptions(slog.LevelInfo, "", grovelog.Color)
 	logger := grovelog.NewLogger(io.Discard, opts)
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		logger.Info("benchmark message",
 			"string", "value",
 			"int", 42,
@@ -434,7 +433,7 @@ func BenchmarkCompareToStandardLogger(b *testing.B) {
 		logger := grovelog.NewLogger(io.Discard, opts)
 
 		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			logger.Info("benchmark message", "key", "value")
 		}
 	})
