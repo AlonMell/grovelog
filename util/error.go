@@ -22,6 +22,9 @@ func (e *errorWithLogCtx) Unwrap() error {
 // WrapCtx wraps an error with the logging context from the provided context
 // This allows context information to propagate along with errors
 func WrapCtx(ctx context.Context, err error) error {
+	if err == nil {
+		return nil
+	}
 	c, _ := getLogCtx(ctx)
 	return &errorWithLogCtx{err: err, ctx: c}
 }

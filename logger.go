@@ -31,6 +31,15 @@ const (
 // DefaultTimeFormat is the default time format
 const DefaultTimeFormat = "[15:05:05.000]"
 
+type colorFn func(format string, a ...any) string
+
+var levelColorMap = map[slog.Level]colorFn{
+	slog.LevelDebug: color.BlueString,
+	slog.LevelInfo:  color.GreenString,
+	slog.LevelWarn:  color.YellowString,
+	slog.LevelError: color.RedString,
+}
+
 // Options holds configuration options for the logger
 type Options struct {
 	SlogOpts   *slog.HandlerOptions
@@ -105,6 +114,9 @@ func NewHandler(out io.Writer, opts Options) slog.Handler {
 }
 
 // Handle processes a log record
+// The gocritic linter is disabled here because it warns about passing
+// large values (like context and record) by value, but this signature
+// is required by the slog.Handler interface
 func (h *Handler) Handle(ctx context.Context, r slog.Record) error { //nolint:gocritic
 	ctxAttrs := util.ExtractLogAttrs(ctx)
 	if len(ctxAttrs) > 0 {
@@ -112,10 +124,8 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error { //nolint:go
 	}
 
 	timeStr := h.formatTime(r.Time)
-
 	logMsg := r.Message
 	formatLevel := r.Level.String() + ":"
-
 	fields := h.collectFields(r)
 
 	var output string
@@ -125,14 +135,6 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error { //nolint:go
 			return err
 		}
 		output = string(jsonOutput)
-	}
-
-	type colorFn func(format string, a ...any) string
-	levelColorMap := map[slog.Level]colorFn{
-		slog.LevelDebug: color.BlueString,
-		slog.LevelInfo:  color.GreenString,
-		slog.LevelWarn:  color.YellowString,
-		slog.LevelError: color.RedString,
 	}
 
 	levelColorFunc, ok := levelColorMap[r.Level]
@@ -165,26 +167,27 @@ func (h *Handler) marshalFields(fields map[string]any) ([]byte, error) {
 			return json.MarshalIndent(fields, "", "  ")
 		}
 
-		*bufPtr = (*bufPtr)[:0] // Clear buffer
+		*bufPtr = (*bufPtr)[:0]
 
-		encoder := json.NewEncoder(io.MultiWriter(io.Discard, &jsonWriter{buf: bufPtr}))
+		encoder := json.NewEncoder(&jsonWriter{buf: bufPtr})
 		encoder.SetIndent("", "  ")
 
 		err := encoder.Encode(fields)
 		jsonData := *bufPtr
-		h.bufferPool.Put(bufPtr) // Return buffer to pool
 
 		if err != nil {
+			h.bufferPool.Put(bufPtr)
 			return nil, err
 		}
 
-		// Remove trailing newline added by json.Encoder
 		if len(jsonData) > 0 && jsonData[len(jsonData)-1] == '\n' {
 			jsonData = jsonData[:len(jsonData)-1]
 		}
 
 		result := make([]byte, len(jsonData))
 		copy(result, jsonData)
+
+		h.bufferPool.Put(bufPtr)
 		return result, nil
 	}
 
