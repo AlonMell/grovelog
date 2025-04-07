@@ -1,6 +1,6 @@
 # GroveLog
 
-GroveLog is a flexible logging library for Go, built on top of the standard `log/slog` package. It provides enhanced formatting options, color support, group handling, and optimized performance.
+GroveLog is a flexible logging library for Go, built on top of the standard `log/slog` package. It provides enhanced formatting options, color support, group handling, context-aware logging, and optimized performance.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/AlonMell/grovelog.svg)](https://pkg.go.dev/github.com/AlonMell/grovelog)
 [![Go Report Card](https://goreportcard.com/badge/github.com/AlonMell/grovelog)](https://goreportcard.com/report/github.com/AlonMell/grovelog)
@@ -13,6 +13,8 @@ GroveLog is a flexible logging library for Go, built on top of the standard `log
 - Efficient memory usage with buffer pooling
 - Support for structured logging with attributes
 - Advanced grouping of attributes with nesting
+- Context-aware logging with attribute propagation
+- Error wrapping with context preservation
 - Compatible with the standard `log/slog` interface
 - Customizable time formats
 
@@ -135,48 +137,18 @@ GroveLog is designed with performance in mind:
 - Efficient JSON serialization
 - Minimal lock contention for thread safety
 
-## Benchmarks
-
-Run the benchmarks:
-
-```bash
-make bench
-```
-
 ## Development
 
 ### Requirements
 
 - Go 1.24 or later
 
-### Testing
+### Testing, Linting, Coverage, Benchmarks
 
 ```bash
-make test
-```
-
-### Linting
-
-```bash
-make lint
-```
-
-### Test Coverage
-
-```bash
-make coverage
+make help
 ```
 
 ## License
 
 MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request

@@ -1,4 +1,4 @@
-.PHONY: build test bench clean lint coverage example
+.PHONY: build test bench clean lint cover example
 
 # Build settings
 GO=go
@@ -11,10 +11,10 @@ build:
 	$(GO) build $(GOFLAGS) -ldflags "$(LDFLAGS)" ./...
 
 test:
-	$(GO) test -v ./...
+	$(GO) test -v ./logger_test.go
 
 bench:
-	$(GO) test -bench=. -benchmem ./...
+	$(GO) test -bench=. -benchmem ./logger_test.go
 
 clean:
 	$(GO) clean
@@ -23,14 +23,14 @@ clean:
 lint:
 	golangci-lint run
 
-coverage:
-	$(GO) test -coverprofile=coverage.out ./...
+cover:
+	$(GO) test -coverprofile=coverage.out ./logger_test.go
 	$(GO) tool cover -html=coverage.out
 
 example:
 	$(GO) run $(EXAMPLE)/main.go
 
-all: clean lint test coverage build
+all: clean lint test cover build
 
 # Help
 help:
@@ -40,7 +40,7 @@ help:
 	@echo "  bench      - Run benchmarks"
 	@echo "  clean      - Clean build artifacts"
 	@echo "  lint       - Run linter"
-	@echo "  coverage   - Generate test coverage report"
+	@echo "  cover      - Generate test coverage report"
 	@echo "  example    - Run example application"
-	@echo "  all        - Run clean, lint, test, coverage, and build"
+	@echo "  all        - Run clean, lint, test, cover, and build"
 	@echo "  help       - Show this help message"

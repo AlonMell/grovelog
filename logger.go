@@ -50,14 +50,6 @@ type Handler struct {
 	mu         sync.RWMutex
 }
 
-// Message represents a formatted log message
-type Message struct {
-	Time  string
-	Level string
-	Msg   string
-	Atrs  string
-}
-
 // NewOptions creates Options with the specified level, time format, and output format
 func NewOptions(level slog.Level, timeFormat string, format Format) Options {
 	if timeFormat == "" {
@@ -116,9 +108,7 @@ func NewHandler(out io.Writer, opts Options) slog.Handler {
 func (h *Handler) Handle(ctx context.Context, r slog.Record) error { //nolint:gocritic
 	ctxAttrs := util.ExtractLogAttrs(ctx)
 	if len(ctxAttrs) > 0 {
-		for _, attr := range ctxAttrs {
-			r.AddAttrs(attr)
-		}
+		r.AddAttrs(ctxAttrs...)
 	}
 
 	timeStr := h.formatTime(r.Time)
@@ -151,14 +141,10 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error { //nolint:go
 	}
 
 	level := levelColorFunc(formatLevel)
-	msg := Message{
-		Time:  timeStr,
-		Level: level,
-		Msg:   color.CyanString(logMsg),
-		Atrs:  color.WhiteString(output),
-	}
+	msg := color.CyanString(logMsg)
+	atrs := color.WhiteString(output)
 
-	h.l.Println(msg.Time, msg.Level, msg.Msg, msg.Atrs)
+	h.l.Println(timeStr, level, msg, atrs)
 	return nil
 }
 

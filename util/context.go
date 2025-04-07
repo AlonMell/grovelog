@@ -14,15 +14,21 @@ const (
 
 type logCtx map[string]any
 
-// Example of a function that uses the logCtx
+// WithLogOp adds an operation name to the context for logging
+// It's a convenience wrapper around UpdateLogCtx
 func WithLogOp(ctx context.Context, op string) context.Context {
 	return UpdateLogCtx(ctx, "op", op)
 }
 
+// UpdateLogCtx adds a key-value pair to the context for logging
+// This function can be used to add structured data that will be included
+// in all subsequent log entries using this context
 func UpdateLogCtx(ctx context.Context, key string, value any) context.Context {
 	return updateLogCtx(ctx, logCtx{key: value})
 }
 
+// ExtractLogAttrs extracts all logging attributes from a context
+// Returns the attributes as a slice of slog.Attr that can be added to a log record
 func ExtractLogAttrs(ctx context.Context) []slog.Attr {
 	if lctx, ok := getLogCtx(ctx); ok {
 		attrs := make([]slog.Attr, 0, len(lctx))
