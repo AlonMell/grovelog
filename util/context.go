@@ -14,12 +14,6 @@ const (
 
 type logCtx map[string]any
 
-// WithLogOp adds an operation name to the context for logging
-// It's a convenience wrapper around UpdateLogCtx
-func WithLogOp(ctx context.Context, op string) context.Context {
-	return UpdateLogCtx(ctx, "op", op)
-}
-
 // UpdateLogCtx adds a key-value pair to the context for logging
 // This function can be used to add structured data that will be included
 // in all subsequent log entries using this context

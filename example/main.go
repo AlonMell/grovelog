@@ -11,6 +11,13 @@ import (
 	"github.com/AlonMell/grovelog/util"
 )
 
+// WithLogOp adds an operation name to the context for logging
+// It's a convenience wrapper around UpdateLogCtx
+// It's example how to use util.UpdateLogCtx
+func WithLogOp(ctx context.Context, op string) context.Context {
+	return util.UpdateLogCtx(ctx, "op", op)
+}
+
 func main() {
 	fmt.Println("=== GROVELOG EXAMPLE ===")
 
