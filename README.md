@@ -3,8 +3,6 @@
 GroveLog is a flexible logging library for Go, built on top of the standard `log/slog` package. It provides enhanced formatting options, color support, group handling, context-aware logging, and optimized performance.
 
 [![Go Version](https://img.shields.io/github/go-mod/go-version/AlonMell/grovelog)](https://golang.org/)
-[![GitHub release](https://img.shields.io/github/v/release/AlonMell/grovelog)](https://github.com/AlonMell/grovelog/releases)
-[![Coverage Status](https://coveralls.io/repos/github/AlonMell/grovelog/badge.svg)](https://coveralls.io/github/AlonMell/grovelog)
 [![Go Reference](https://pkg.go.dev/badge/github.com/AlonMell/grovelog.svg)](https://pkg.go.dev/github.com/AlonMell/grovelog)
 [![Go Report Card](https://goreportcard.com/badge/github.com/AlonMell/grovelog)](https://goreportcard.com/report/github.com/AlonMell/grovelog)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
